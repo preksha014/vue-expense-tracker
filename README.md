@@ -27,3 +27,7 @@ npm run dev
 ```sh
 npm run build
 ```
+
+
+## Deployment
+Check out the live application: [Vue Expense Tracker](https://vue-expense-tracker-tau-nine.vercel.app/)
