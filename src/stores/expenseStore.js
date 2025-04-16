@@ -3,33 +3,44 @@ import { ref, computed } from 'vue'
 import moment from 'moment'
 
 export const useExpenseStore = defineStore('expense', () => {
-  // State
+  // States
   const expenses = ref(JSON.parse(localStorage.getItem('expenses')) || [])
   
   // Getters
   const totalExpense = computed(() => {
-    return expenses.value.reduce((sum, e) => sum + e.amount, 0)
+    return expenses.value.reduce((sum, e) => sum + parseFloat(e.amount), 0)
   })
   
   const highestExpense = computed(() => {
     if (!expenses.value.length) return { name: 'None', amount: 0 }
-    return expenses.value.reduce((max, e) => e.amount > max.amount ? e : max, expenses.value[0])
+    return expenses.value.reduce((max, e) => 
+      parseFloat(e.amount) > parseFloat(max.amount) ? e : max, expenses.value[0])
   })
   
-  const filteredExpenses = computed(() => (monthFilter, groupFilter) => {
-    return expenses.value.filter(e => 
-      (!monthFilter || moment(e.date).format("YYYY-MM") === monthFilter) && 
-      (!groupFilter || e.group === groupFilter)
-    )
+  const currentMonthExpense = computed(() => {
+    const currentMonth = moment().format("YYYY-MM")
+    return expenses.value
+      .filter(expense => moment(expense.date).format("YYYY-MM") === currentMonth)
+      .reduce((total, expense) => total + parseFloat(expense.amount), 0)
+  })
+  
+  const recentExpenses = computed(() => {
+    return [...expenses.value]
+      .sort((a, b) => moment(b.date).valueOf() - moment(a.date).valueOf())
+      .slice(0, 5)
   })
   
   // Actions
   function addExpense(expense) {
+    // Ensure amount is a number
+    expense.amount = parseFloat(expense.amount)
     expenses.value.push(expense)
     saveToLocalStorage()
   }
   
   function updateExpense(index, expense) {
+    // Ensure amount is a number
+    expense.amount = parseFloat(expense.amount)
     expenses.value[index] = expense
     saveToLocalStorage()
   }
@@ -52,7 +63,8 @@ export const useExpenseStore = defineStore('expense', () => {
     expenses, 
     totalExpense, 
     highestExpense, 
-    filteredExpenses,
+    currentMonthExpense,
+    recentExpenses,
     addExpense,
     updateExpense,
     deleteExpense,
