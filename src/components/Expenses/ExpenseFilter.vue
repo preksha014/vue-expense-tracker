@@ -1,4 +1,3 @@
-<!-- src/components/Expenses/ExpenseFilter.vue -->
 <template>
     <div class="bg-white p-4 shadow mb-6">
       <h2 class="font-bold mb-3">Filters</h2>

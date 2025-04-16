@@ -8,8 +8,13 @@
     </div>
 
     <!-- Filter Component -->
-    <expense-filter :search-query="filters.searchQuery" :group-filter="filters.groupFilter"
-      :month-filter="filters.monthFilter" :groups="groupStore.groups" @filter-change="updateFilters" />
+    <expense-filter 
+      :search-query="filters.searchQuery" 
+      :group-filter="filters.groupFilter"
+      :month-filter="filters.monthFilter" 
+      :groups="groupStore.groups" 
+      @filter-change="updateFilters" 
+    />
 
     <!-- Expenses List -->
     <div class="bg-white p-4 shadow">
@@ -18,16 +23,33 @@
         <p><span class="font-medium">Total:</span> ₹{{ totalAmount }}</p>
       </div>
 
-      <expense-list :expenses="filteredExpenses" @edit="editExpense" @delete="confirmDeleteExpense" />
+      <expense-list 
+        :expenses="filteredExpenses" 
+        @edit="editExpense" 
+        @delete="showDeleteExpenseModal" 
+      />
 
       <p v-if="!filteredExpenses.length" class="text-center py-4 text-gray-500">
         No expenses found.
       </p>
     </div>
 
-    <!-- Expense Modal -->
-    <expense-form v-if="showExpenseModal" :expense="editingExpense" :groups="groupStore.groups" @save="saveExpense"
-      @close="closeExpenseModal" />
+    <!-- Shared Modal Components -->
+    <expense-modal 
+      v-if="showExpenseModal" 
+      :expense="editingExpense" 
+      :groups="groupStore.groups" 
+      @save="saveExpense" 
+      @close="closeExpenseModal" 
+    />
+
+    <delete-modal
+      v-if="showDeleteModal"
+      title="Delete Expense"
+      message="Are you sure you want to delete this expense? This action cannot be undone."
+      @confirm="handleDeleteConfirm"
+      @cancel="showDeleteModal = false"
+    />
   </div>
 </template>
 
@@ -37,7 +59,9 @@ import { useExpenseStore } from '../stores/expenseStore'
 import { useGroupStore } from '../stores/groupStore'
 import ExpenseList from '../components/Expenses/ExpenseList.vue'
 import ExpenseFilter from '../components/Expenses/ExpenseFilter.vue'
-import ExpenseForm from '../components/Expenses/ExpenseForm.vue'
+// Import shared modal components
+import ExpenseModal from '../components/Shared/ExpenseModal.vue'
+import DeleteModal from '../components/Shared/DeleteModal.vue'
 import moment from 'moment'
 
 const expenseStore = useExpenseStore()
@@ -52,8 +76,10 @@ const filters = reactive({
 
 const filteredExpenses = ref([])
 const showExpenseModal = ref(false)
+const showDeleteModal = ref(false)
 const editingExpense = ref(null)
 const editingIndex = ref(-1)
+const deletingIndex = ref(-1)
 
 // Computed total amount
 const totalAmount = computed(() =>
@@ -122,15 +148,21 @@ function saveExpense(expense) {
   closeExpenseModal()
 }
 
-function confirmDeleteExpense(index) {
-  if (confirm('Are you sure you want to delete this expense?')) {
-    const expense = filteredExpenses.value[index]
-    const realIndex = findExpenseIndex(expense)
+// New delete handling with modal
+function showDeleteExpenseModal(index) {
+  deletingIndex.value = index
+  showDeleteModal.value = true
+}
 
-    if (realIndex >= 0) {
-      expenseStore.deleteExpense(realIndex)
-    }
+function handleDeleteConfirm() {
+  const expense = filteredExpenses.value[deletingIndex.value]
+  const realIndex = findExpenseIndex(expense)
+
+  if (realIndex >= 0) {
+    expenseStore.deleteExpense(realIndex)
   }
+  
+  showDeleteModal.value = false
 }
 
 // Helper function to find the index of an expense in the store
