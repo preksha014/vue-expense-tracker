@@ -30,4 +30,4 @@ npm run build
 
 
 ## Deployment
-Check out the live application: [Vue Expense Tracker](https://vue-expense-tracker-tau-nine.vercel.app/)
+Check out the live application: [Vue Expense Tracker](https://vue-expense-tracker-woad.vercel.app/)
