@@ -1,18 +1,12 @@
 <template>
   <form @submit.prevent="handleSubmit">
-    <div class="mb-6">
-      <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Group Name</label>
-      <input
-        id="name"
-        v-model="formData.name"
-        type="text"
-        class="w-full p-2 border border-gray-300 rounded"
-      />
-      <span v-if="v$.name.$error" class="text-red-500 text-sm mt-1">
-        {{ v$.name.$errors[0].$message }}
-      </span>
-    </div>
-
+    <InputField
+      id="name"
+      v-model="formData.name"
+      label="Group Name"
+      :error="v$.name.$error ? v$.name.$errors[0].$message : ''"
+    />
+    
     <div class="flex justify-end space-x-3">
       <button
         type="button"
@@ -36,6 +30,7 @@ import { defineProps, defineEmits, ref, computed, onMounted } from 'vue'
 import useVuelidate from '@vuelidate/core'
 import { required } from '@vuelidate/validators'
 import { useGroupStore } from '../../stores/groupStore'
+import InputField from '../Shared/InputField.vue'
 
 const props = defineProps({
   group: {
@@ -58,11 +53,11 @@ const rules = computed(() => {
   }
 })
 
-const v$ = useVuelidate(rules, formData.value)
+const v$ = useVuelidate(rules, formData)
 
 // Check if we're editing an existing group
 const isEditing = computed(() => {
-  return props.group.id !== undefined || 
+  return props.group.id !== undefined ||
          (props.group.name && props.group.name.trim() !== '')
 })
 
@@ -72,24 +67,23 @@ onMounted(() => {
 })
 
 async function handleSubmit() {
-  // Run validation
   const result = await v$.value.$validate()
   if (!result) {
     return
   }
-  
+ 
   // Check if group exists (for new groups)
   if (!isEditing.value && groupStore.groupExists(formData.value.name)) {
     v$.value.name.$errors.push({ $message: 'Group name already exists!' })
     return
   }
-
+  
   // Create a new object to avoid reactivity issues
   const groupData = {
     id: props.group.id, // Will be undefined for new groups
     name: formData.value.name
   }
-
+  
   emit('save', groupData)
 }
 </script>

@@ -1,47 +1,31 @@
 <template>
   <form @submit.prevent="handleSubmit">
-    <div class="mb-4">
-      <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-      <input
-        id="name"
-        v-model="formData.name"
-        type="text"
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Enter expense name"
-      />
-      <span v-if="v$.name.$error" class="text-red-500 text-sm mt-1">
-        {{ v$.name.$errors[0].$message }}
-      </span>
-    </div>
+    <InputField
+      id="name"
+      v-model="formData.name"
+      label="Name"
+      placeholder="Enter expense name"
+      :error="v$.name.$error ? v$.name.$errors[0].$message : ''"
+    />
 
-    <div class="mb-4">
-      <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
-      <input
-        id="amount"
-        v-model.number="formData.amount"
-        type="number"
-        step="0.01"
-        min="0.01"
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Enter amount"
-      />
-      <span v-if="v$.amount.$error" class="text-red-500 text-sm mt-1">
-        {{ v$.amount.$errors[0].$message }}
-      </span>
-    </div>
+    <InputField
+      id="amount"
+      v-model="formData.amount"
+      label="Amount (₹)"
+      type="number"
+      step="0.01"
+      min="0.01"
+      placeholder="Enter amount"
+      :error="v$.amount.$error ? v$.amount.$errors[0].$message : ''"
+    />
 
-    <div class="mb-4">
-      <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-      <input
-        id="date"
-        v-model="formData.date"
-        type="date"
-        class="w-full p-2 border border-gray-300 rounded"
-      />
-      <span v-if="v$.date.$error" class="text-red-500 text-sm mt-1">
-        {{ v$.date.$errors[0].$message }}
-      </span>
-    </div>
+    <InputField
+      id="date"
+      v-model="formData.date"
+      label="Date"
+      type="date"
+      :error="v$.date.$error ? v$.date.$errors[0].$message : ''"
+    />
 
     <div class="mb-6">
       <label for="group" class="block text-sm font-medium text-gray-700 mb-1">Group</label>
@@ -83,6 +67,7 @@ import { defineProps, defineEmits, ref, computed, onMounted } from 'vue'
 import useVuelidate from '@vuelidate/core'
 import { required, decimal, minValue } from '@vuelidate/validators'
 import moment from 'moment'
+import InputField from '../Shared/InputField.vue'
 
 const props = defineProps({
   expense: {
@@ -135,11 +120,9 @@ onMounted(() => {
 })
 
 async function handleSubmit() {
-  // Trigger validation
   const isValid = await v$.value.$validate()
 
   if (!isValid) {
-    // Optionally, log or show an error to the user
     console.error('Form validation failed:', v$.value.$errors)
     return
   }

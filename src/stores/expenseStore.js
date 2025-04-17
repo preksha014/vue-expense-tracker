@@ -55,6 +55,16 @@ export const useExpenseStore = defineStore('expense', () => {
     return expenses.value.filter(e => e.name.toLowerCase().includes(query.toLowerCase()))
   }
   
+  function updateExpenseGroup(oldGroupName, newGroupName) {
+    expenses.value = expenses.value.map(expense => {
+      if (expense.group === oldGroupName) {
+        return { ...expense, group: newGroupName }
+      }
+      return expense
+    })
+    saveToLocalStorage()
+  }
+
   function saveToLocalStorage() {
     localStorage.setItem('expenses', JSON.stringify(expenses.value))
   }
@@ -68,6 +78,7 @@ export const useExpenseStore = defineStore('expense', () => {
     addExpense,
     updateExpense,
     deleteExpense,
+    updateExpenseGroup,
     searchExpenses
   }
 })

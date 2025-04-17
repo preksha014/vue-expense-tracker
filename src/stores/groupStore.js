@@ -30,11 +30,16 @@ export const useGroupStore = defineStore('group', () => {
     saveToLocalStorage()
   }
   
-  function updateGroup(index, name) {
+  function updateGroup(index, newName) {
     const now = moment().format("YYYY-MM-DD HH:mm:ss")
-    groups.value[index].name = name
+    const oldName = groups.value[index].name
+    groups.value[index].name = newName
     groups.value[index].updatedAt = now
     saveToLocalStorage()
+    
+    // Update the group name in all related expenses
+    const expenseStore = useExpenseStore()
+    expenseStore.updateExpenseGroup(oldName, newName)
   }
   
   function deleteGroup(index) {
